@@ -11,3 +11,6 @@ node_modules
 prisma/migrations
 .antigravityrules
 C:\Users\user\.gemini\antigravity\brain\
+data/
+.env
+*.db
