@@ -92,6 +92,15 @@
                 </svg>
                 피킹 분석 리포트
             </div>
+            <div onclick="switchView('status')" id="menu-status"
+                class="sidebar-item w-full flex items-center px-4 py-3 rounded-xl font-medium text-left">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 17v-2a4 4 0 00-4-4H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+                    </path>
+                </svg>
+                배차 현황 (MySQL 원본)
+            </div>
         </div>
         <div class="p-4 text-xs text-indigo-400 text-center">
             © 2026 Antigravity System
@@ -109,7 +118,7 @@
 
         <!-- Common Master Header (Level 1 + 2 + 3 Integrated) -->
         <div class="sticky top-0 z-30 bg-white border-b border-slate-200 shadow-sm flex-shrink-0">
-            <div class="max-w-7xl mx-auto divide-y divide-slate-100">
+            <div class="max-w-full px-4 mx-auto divide-y divide-slate-100">
                 <!-- Level 1: Filter Area (Ultra Compact) -->
                 <div class="px-6 py-2 bg-slate-50 flex items-center justify-between gap-4">
                     <div class="flex items-center gap-4 flex-grow overflow-x-auto no-scrollbar">
@@ -123,6 +132,11 @@
                             <span class="text-[10px] font-bold text-slate-400 whitespace-nowrap">기사</span>
                             <input type="text" id="driverInput" placeholder="기사명"
                                 class="w-32 px-2 py-1 border rounded text-xs bg-white outline-none focus:ring-1 focus:ring-indigo-500">
+                        </div>
+                        <div id="status-filter-group" class="hidden items-center gap-2 flex-shrink-0">
+                            <span class="text-[10px] font-bold text-slate-400 whitespace-nowrap">통합조회</span>
+                            <input type="text" id="searchInput" placeholder="기사명 또는 거래처명" value="서원유통"
+                                class="w-48 px-2 py-1 border rounded text-xs bg-white outline-none focus:ring-1 focus:ring-indigo-500">
                         </div>
                         <div id="analysis-filter-group" class="hidden items-center gap-2 flex-shrink-0">
                             <span class="text-[10px] font-bold text-slate-400 whitespace-nowrap">그룹</span>
@@ -144,8 +158,20 @@
                             </select>
                         </div>
                     </div>
-                    <button onclick="fetchData()"
-                        class="px-4 py-1.5 bg-indigo-600 text-white rounded font-bold text-xs hover:bg-indigo-700 whitespace-nowrap">조회</button>
+                    <div class="flex items-center gap-2">
+                        <button onclick="fetchData()"
+                            class="px-4 py-1.5 bg-indigo-600 text-white rounded font-bold text-xs hover:bg-indigo-700 whitespace-nowrap">조회</button>
+                        <button id="syncBtn" onclick="syncData()"
+                            class="px-3 py-1.5 bg-slate-200 text-slate-700 rounded font-bold text-xs hover:bg-slate-300 whitespace-nowrap border border-slate-300 flex items-center gap-1.5"
+                            title="최근 14일 데이터를 원본(MySQL)에서 가져옵니다.">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                                </path>
+                            </svg>
+                            데이터 동기화
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Level 2: Summary Chips Area (Horizontal Flex Only) -->
@@ -153,6 +179,7 @@
                     <div id="dispatch-summaryCards" class="view-content active summary-row active"></div>
                     <div id="picking-summaryCards" class="view-content summary-row"></div>
                     <div id="analysis-summaryCards" class="view-content summary-row"></div>
+                    <div id="status-summaryCards" class="view-content summary-row active !hidden"></div>
                 </div>
 
                 <!-- Level 3: Consolidated Table Headers -->
@@ -229,13 +256,19 @@
                             총중량</div>
                         <div class="flex-grow text-center">비중</div>
                     </div>
+                    <!-- Status Header -->
+                    <div id="status-header"
+                        class="view-content flex px-6 py-2 select-none overflow-x-auto no-scrollbar">
+                        <div class="w-[50px] flex-shrink-0 text-center">No.</div>
+                        <div class="flex-grow text-slate-400 font-normal italic">데이터를 조회하면 컬럼이 자동으로 표시됩니다.</div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Scrollable Content Area -->
-        <main class="flex-1 overflow-y-auto p-6 bg-slate-100">
-            <div class="max-w-7xl mx-auto">
+        <main class="flex-1 overflow-y-auto p-4 bg-slate-100">
+            <div class="max-w-full mx-auto">
 
                 <!-- Dispatch View Container -->
                 <div id="view-dispatch" class="view-content active">
@@ -276,8 +309,54 @@
                     </div>
                 </div>
 
+                <!-- Status View Container -->
+                <div id="view-status" class="view-content">
+                    <div class="bg-white border rounded shadow-sm overflow-x-auto">
+                        <table class="min-w-full text-left text-sm whitespace-nowrap">
+                            <tbody id="status-tableBody" class="divide-y text-slate-600">
+                                <tr>
+                                    <td colspan="50" class="p-8 text-center text-slate-400">데이터를 조회해주세요.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
             </div>
         </main>
+    </div>
+
+    <!-- Detail Modal -->
+    <div id="detail-modal"
+        class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+        <div
+            class="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div class="p-6 border-b border-slate-100 flex items-center justify-between bg-indigo-50">
+                <div>
+                    <h3 class="font-bold text-lg text-indigo-900" id="modal-title">거래처 주문 상세</h3>
+                    <p class="text-xs text-indigo-400 mt-1" id="modal-subtitle">품목별 합계 수량</p>
+                </div>
+                <button onclick="closeModal()" class="p-2 hover:bg-white rounded-full transition-colors">
+                    <svg class="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-0 max-h-[60vh] overflow-y-auto">
+                <table class="w-full text-sm">
+                    <thead class="sticky top-0 bg-slate-50 text-slate-400 text-[10px] uppercase font-bold">
+                        <tr>
+                            <th class="px-6 py-3 text-left">품목명</th>
+                            <th class="px-6 py-3 text-right">수량</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modal-tableBody" class="divide-y divide-slate-50">
+                        <!-- Items will be injected here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <!-- Scripts -->
@@ -285,6 +364,7 @@
     <script src="/dispatch.js"></script>
     <script src="/picking.js"></script>
     <script src="/analysis.js"></script>
+    <script src="/status.js"></script>
     <script>
         let currentView = 'dispatch';
 
@@ -302,52 +382,46 @@
             const pageTitles = {
                 'dispatch': '배차 요약 리포트',
                 'picking': '피킹 요약 리포트',
-                'analysis': '피킹 분석 리포트'
+                'analysis': '피킹 분석 리포트',
+                'status': '배차 현황 (MySQL)'
             };
             document.getElementById('page-title').innerText = pageTitles[view];
 
             // Filter Visibility Control
             const driverFilter = document.getElementById('driver-filter-group');
+            const statusFilter = document.getElementById('status-filter-group');
             const customerFilter = document.getElementById('customer-filter-group');
             const analysisFilter = document.getElementById('analysis-filter-group');
+
+            // Hide all filter groups first
+            [driverFilter, statusFilter, customerFilter, analysisFilter].forEach(el => el.style.display = 'none');
+
+            // Set default sync button visibility
+            document.getElementById('syncBtn').style.display = 'flex';
 
             if (view === 'dispatch') {
                 driverFilter.style.display = 'flex';
                 customerFilter.style.display = 'flex';
-                analysisFilter.style.display = 'none';
-
-                document.getElementById('dispatch-summaryCards').classList.add('active');
-                document.getElementById('picking-summaryCards').classList.remove('active');
-                document.getElementById('analysis-summaryCards').classList.remove('active');
-
-                document.getElementById('dispatch-header').classList.add('active');
-                document.getElementById('picking-header').classList.remove('active');
-                document.getElementById('analysis-header').classList.remove('active');
             } else if (view === 'picking') {
-                driverFilter.style.display = 'none';
                 customerFilter.style.display = 'flex';
-                analysisFilter.style.display = 'none';
-
-                document.getElementById('dispatch-summaryCards').classList.remove('active');
-                document.getElementById('picking-summaryCards').classList.add('active');
-                document.getElementById('analysis-summaryCards').classList.remove('active');
-
-                document.getElementById('dispatch-header').classList.remove('active');
-                document.getElementById('picking-header').classList.add('active');
-                document.getElementById('analysis-header').classList.remove('active');
-            } else {
-                driverFilter.style.display = 'none';
-                customerFilter.style.display = 'none';
+            } else if (view === 'analysis') {
                 analysisFilter.style.display = 'flex';
-
-                document.getElementById('dispatch-summaryCards').classList.remove('active');
-                document.getElementById('picking-summaryCards').classList.remove('active');
-                document.getElementById('analysis-summaryCards').classList.add('active');
-
-                document.getElementById('dispatch-header').classList.remove('active');
-                document.getElementById('picking-header').classList.remove('active');
-                document.getElementById('analysis-header').classList.add('active');
+            } else if (view === 'status') {
+                statusFilter.style.display = 'flex';
+                customerFilter.style.display = 'flex';
+                document.getElementById('syncBtn').style.display = 'none'; // MySQL 직접조회는 동기화 불필요
             }
+
+            // Summary & Header control
+            document.querySelectorAll('.summary-row').forEach(el => el.classList.remove('active'));
+            document.getElementById(view + '-summaryCards').classList.add('active');
+
+            const headers = ['dispatch-header', 'picking-header', 'analysis-header', 'status-header'];
+            headers.forEach(hId => {
+                const hEl = document.getElementById(hId);
+                if (hId === view + '-header') hEl.classList.add('active');
+                else hEl.classList.remove('active');
+            });
 
             // URL Update
             window.history.pushState({}, '', '/' + view);
@@ -357,7 +431,8 @@
         function fetchData() {
             if (currentView === 'dispatch') fetchDispatchData();
             else if (currentView === 'picking') fetchPickingData();
-            else fetchAnalysisData();
+            else if (currentView === 'analysis') fetchAnalysisData();
+            else fetchStatusData();
         }
 
         // Auto-detect view from URL
@@ -370,6 +445,9 @@
 
         // Enter key listener
         document.getElementById('driverInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') fetchData();
+        });
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') fetchData();
         });
     </script>

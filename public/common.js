@@ -3,6 +3,7 @@ window.appState = {
     dispatchData: [],
     pickingData: [],
     analysisData: [],
+    statusData: [],
     sortKey: '',
     sortOrder: 'asc' // 'asc' or 'desc'
 };
@@ -29,6 +30,7 @@ function handleSort(view, key, type = 'string') {
     if (view === 'dispatch') targetData = window.appState.dispatchData;
     else if (view === 'picking') targetData = window.appState.pickingData;
     else if (view === 'analysis') targetData = window.appState.analysisData;
+    else if (view === 'status') targetData = window.appState.statusData;
 
     if (!targetData || targetData.length === 0) return;
 
@@ -62,6 +64,7 @@ function handleSort(view, key, type = 'string') {
     if (view === 'dispatch') renderDispatchData({ data: targetData, summary: window.appState.dispatchSummary }, document.getElementById('dispatch-tableBody'), document.getElementById('dispatch-summaryCards'));
     else if (view === 'picking') renderPickingData({ data: targetData, summary: window.appState.pickingSummary }, document.getElementById('picking-tableBody'), document.getElementById('picking-summaryCards'));
     else if (view === 'analysis') renderAnalysisData(targetData, document.getElementById('analysis-tableBody'), document.getElementById('analysis-summaryCards'));
+    else if (view === 'status') renderStatusData(targetData, document.getElementById('status-tableBody'), document.getElementById('status-header'));
 
     // 헤더 아이콘 업데이트 (선택 사항)
     updateSortIcons(view, key, window.appState.sortOrder);
@@ -109,6 +112,37 @@ function setToday() { setDateRange(0, 0, 'btn-today'); }
 function setYesterday() { setDateRange(1, 1, 'btn-yesterday'); }
 function setLast7Days() { setDateRange(7, 0, 'btn-7days'); }
 
+function setLast14Days() { setDateRange(14, 0, 'btn-14days'); }
+
+async function syncData() {
+    const syncBtn = document.getElementById('syncBtn');
+    if (!syncBtn) return;
+
+    if (!confirm("최근 14일 데이터를 원본(MySQL)에서 가져오시겠습니까?\n(기존 NeonDB 데이터는 덮어씌워집니다.)")) return;
+
+    const originalText = syncBtn.innerText;
+    syncBtn.innerText = "🔄 동기화 중...";
+    syncBtn.disabled = true;
+
+    try {
+        const res = await fetch('/api/sync', { method: 'POST' });
+        const json = await res.json();
+
+        if (json.success) {
+            alert("✅ 데이터 동기화 완료!");
+            fetchData(); // 현재 뷰의 데이터 갱신
+        } else {
+            alert("❌ 동기화 실패: " + json.error);
+        }
+    } catch (e) {
+        console.error(e);
+        alert("❌ 서버 통신 오류");
+    } finally {
+        syncBtn.innerText = originalText;
+        syncBtn.disabled = false;
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const today = new Date();
     const todayStr = toDateStr(today);
@@ -116,8 +150,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const endInput = document.getElementById('endDate');
     const dateDisplay = document.getElementById('currentDate');
 
-    if (startInput) startInput.value = todayStr;
-    if (endInput) endInput.value = todayStr;
     if (dateDisplay) {
         dateDisplay.innerText = today.toLocaleDateString('ko-KR', {
             weekday: 'long',
