@@ -10,9 +10,9 @@ async function listTables() {
     const res = await client.query(`
     SELECT table_name
     FROM information_schema.tables
-    WHERE table_schema = 'prj_picking_system'
+    WHERE table_schema = 'universal_vms'
   `);
-    console.log("Tables in prj_picking_system:");
+    console.log("Tables in universal_vms:");
     res.rows.forEach(row => console.log(row.table_name));
     await client.end();
 }

@@ -1,5 +1,5 @@
 // dispatch_server.js
-// [SME 개발 사수] 배차 요약 화면 (기사별 납품처/중량 집계)
+// [Universal VMS] 배차 요약 화면 (기사별 납품처/중량 집계)
 require('dotenv').config();
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
@@ -43,8 +43,8 @@ app.get('/api/summary', async (req, res) => {
             COUNT(DISTINCT b."B_C_NAME") as delivery_dest_count,
             COUNT(DISTINCT (b."B_DATE", b."CB_DRIVER", b."B_P_NO")) as total_count,
             SUM(b."B_KG") as total_weight
-        FROM "prj_picking_system"."NPS_t_balju" b
-        LEFT JOIN "prj_picking_system"."NPS_t_car" c ON b."CB_DRIVER" = c."CB_DRIVER"
+        FROM "universal_vms"."NPS_t_balju" b
+        LEFT JOIN "universal_vms"."NPS_t_car" c ON b."CB_DRIVER" = c."CB_DRIVER"
         WHERE b."B_DATE" >= '${startDate}' AND b."B_DATE" <= '${endDate}'
         ${customerCondition}
         AND b."CB_DRIVER" IS NOT NULL AND b."CB_DRIVER" <> ''
@@ -97,8 +97,8 @@ app.get('/api/picking-summary', async (req, res) => {
                     b."B_P_NO",
                     SUM(b."B_QTY") as qty,
                     SUM(b."B_KG") as kg
-                FROM "prj_picking_system"."NPS_t_balju" b
-                LEFT JOIN "prj_picking_system"."NPS_t_product" p ON b."B_P_NO" = p."P_CODE"
+                FROM "universal_vms"."NPS_t_balju" b
+                LEFT JOIN "universal_vms"."NPS_t_product" p ON b."B_P_NO" = p."P_CODE"
                 ${whereClause}
                 GROUP BY p_div_pick_fixed, b."B_DATE", b."CB_DRIVER", b."B_P_NO"
             ) as sub
@@ -143,10 +143,10 @@ app.get('/api/picking-analysis', async (req, res) => {
                     SUM(b."B_KG") as total_weight,
                     FLOOR(SUM(b."B_QTY") / NULLIF(MAX(p."P_IPSU"), 0)) as total_boxes,
                     SUM(b."B_QTY") % NULLIF(MAX(p."P_IPSU"), 0) as total_items
-                FROM "prj_picking_system"."NPS_t_balju" b
-                LEFT JOIN "prj_picking_system"."NPS_t_product" p ON b."B_P_NO" = p."P_CODE"
-                LEFT JOIN "prj_picking_system"."NPS_t_code_340" c340 ON p."P_DIV_PICK" = c340."P_DIV_PICK"
-                LEFT JOIN "prj_picking_system"."NPS_t_car" c ON b."CB_DRIVER" = c."CB_DRIVER"
+                FROM "universal_vms"."NPS_t_balju" b
+                LEFT JOIN "universal_vms"."NPS_t_product" p ON b."B_P_NO" = p."P_CODE"
+                LEFT JOIN "universal_vms"."NPS_t_code_340" c340 ON p."P_DIV_PICK" = c340."P_DIV_PICK"
+                LEFT JOIN "universal_vms"."NPS_t_car" c ON b."CB_DRIVER" = c."CB_DRIVER"
                 ${whereClause}
                 GROUP BY group_name, b."B_DATE", b."CB_DRIVER", b."B_P_NO", c."CA_DOCKNO"
             ) as sub
@@ -178,7 +178,7 @@ app.post('/api/sync', async (req, res) => {
     try {
         const sourceUrl = process.env.MYSQL_URL || "mysql://user_web:pass_web%40%23@221.143.21.135:3306/db_ndy?charset=utf8mb4";
         const targetUrl = process.env.DATABASE_URL;
-        const targetSchema = 'prj_picking_system';
+        const targetSchema = 'universal_vms';
 
         const TARGET_TABLES = [
             { source: 't_balju', target: 'NPS_t_balju', useFilter: true },
@@ -349,7 +349,7 @@ app.get('/api/dispatch-status-details', async (req, res) => {
 
 app.get('/api/customers', async (req, res) => {
     try {
-        const raw = await prisma.$queryRawUnsafe(`SELECT DISTINCT "CB_DIV_CUST" FROM "prj_picking_system"."NPS_t_balju" WHERE "B_DATE" >= (CURRENT_DATE - INTERVAL '30 days')::text AND "CB_DIV_CUST" IS NOT NULL`);
+        const raw = await prisma.$queryRawUnsafe(`SELECT DISTINCT "CB_DIV_CUST" FROM "universal_vms"."NPS_t_balju" WHERE "B_DATE" >= (CURRENT_DATE - INTERVAL '30 days')::text AND "CB_DIV_CUST" IS NOT NULL`);
         res.json({ data: raw.map(r => fixEncoding(r.CB_DIV_CUST)).filter(c => c) });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -359,5 +359,5 @@ app.get(/.*/, (req, res) => {
 });
 
 app.listen(port, () => {
-    console.log(`🚚 시스템 가동 중: http://localhost:${port}`);
+    console.log(`🚚 Universal VMS 가동 중: http://localhost:${port}`);
 });

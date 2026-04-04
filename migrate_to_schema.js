@@ -6,7 +6,7 @@ const mysql = require('mysql2/promise');
 
 const sourceUrl = process.env.MYSQL_URL || "mysql://user_web:pass_web%40%23@221.143.21.135:3306/db_ndy?charset=utf8mb4";
 const targetUrl = process.env.DATABASE_URL;
-const targetSchema = 'prj_picking_system';
+const targetSchema = 'universal_vms';
 
 const TARGET_TABLES = [
     { source: 't_balju', target: 'NPS_t_balju', useFilter: true },
