@@ -1,12 +1,73 @@
-// 글로벌 상태 관리
 window.appState = {
     dispatchData: [],
     pickingData: [],
     analysisData: [],
     statusData: [],
     sortKey: '',
-    sortOrder: 'asc' // 'asc' or 'desc'
+    sortOrder: 'asc', // 'asc' or 'desc'
+    viewState: {} // 각 뷰(메뉴)별 필터 상태 저장
 };
+
+/**
+ * 현재 뷰의 필터 상태(날짜 등)를 저장합니다.
+ */
+function saveViewState(view) {
+    if (!view) return;
+    const getVal = (id) => {
+        const el = document.getElementById(id);
+        return el ? el.value : '';
+    };
+    const getChecked = (id) => {
+        const el = document.getElementById(id);
+        return el ? el.checked : false;
+    };
+
+    window.appState.viewState[view] = {
+        startDate: getVal('startDate'),
+        endDate: getVal('endDate'),
+        isSingle: getChecked('isSingleDate'),
+        driver: getVal('driverInput'),
+        search: getVal('searchInput'),
+        customer: getVal('custSelect'),
+        day: getVal('daySelect'),
+        productSearch: getVal('productSearchInput'),
+        analysis: getVal('analysisSelect')
+    };
+}
+
+/**
+ * 특정 뷰의 필터 상태를 복원합니다.
+ */
+function loadViewState(view) {
+    const state = window.appState.viewState[view];
+    const setVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.value = val || '';
+    };
+
+    if (!state) {
+        // 이전에 저장된 상태가 없으면 기본값으로 초기화
+        setToday();
+        ['driverInput', 'searchInput', 'custSelect', 'daySelect', 'productSearchInput', 'analysisSelect'].forEach(id => setVal(id, ''));
+        return;
+    }
+
+    setVal('startDate', state.startDate);
+    setVal('endDate', state.endDate);
+
+    const isSingle = document.getElementById('isSingleDate');
+    if (isSingle) {
+        isSingle.checked = state.isSingle;
+        isSingle.dispatchEvent(new Event('change'));
+    }
+
+    setVal('driverInput', state.driver);
+    setVal('searchInput', state.search);
+    setVal('custSelect', state.customer);
+    setVal('daySelect', state.day);
+    setVal('productSearchInput', state.productSearch);
+    setVal('analysisSelect', state.analysis);
+}
 
 function toDateStr(d) {
     const yyyy = d.getFullYear();
@@ -93,6 +154,12 @@ function setDateRange(minusStart, minusEnd, btnId) {
     const e = new Date(); e.setDate(e.getDate() - minusEnd);
     document.getElementById('startDate').value = toDateStr(s);
     document.getElementById('endDate').value = toDateStr(e);
+
+    const isSingle = document.getElementById('isSingleDate');
+    if (isSingle && minusStart !== minusEnd) {
+        isSingle.checked = false;
+        isSingle.dispatchEvent(new Event('change'));
+    }
 
     document.querySelectorAll('.date-btn').forEach(btn => {
         btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-md', 'scale-105');

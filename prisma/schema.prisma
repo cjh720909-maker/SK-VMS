@@ -52,12 +52,31 @@ model NPS_t_balju {
   B_GUM_DATE       DateTime? @db.Timestamp(0)
   B_GUM_E_NAME     String?   @db.VarChar(20)
   B_QTY_DAS_STCOK  Int       @default(0)
+  B_ORDER_DATE     String?   @db.VarChar(10)
+  B_BARCODE        String?   @db.VarChar(20)
+  B_STATE          String?   @db.VarChar(20)
+  B_MAKER          String?   @db.VarChar(40)
+
 
   @@index([B_DATE, CB_IDX, B_P_NO], map: "NPS_B_DATE_IDX")
   @@index([B_P_NO, C_NAME], map: "NPS_B_P_NO_IDX")
   @@index([O_IDX], map: "NPS_O_IDX_IDX")
 
   @@map("NPS_t_balju")
+}
+
+model NPS_t_customer {
+  C_IDX       Int     @id @default(autoincrement())
+  C_CODE      String? @db.VarChar(40)
+  C_NAME      String? @db.VarChar(80)
+  C_CEO       String? @db.VarChar(40)
+  C_SANO      String? @db.VarChar(20)
+  C_ADDRESS   String? @db.VarChar(100)
+  CB_DIV_CUST String? @db.VarChar(40)
+  C_TEL       String? @db.VarChar(20)
+  C_MEMO      String? @db.VarChar(200)
+
+  @@map("NPS_t_customer")
 }
 
 model NPS_t_car {
@@ -121,8 +140,11 @@ model NPS_t_product {
   P_MAKER         String? @db.VarChar(20)
   SI_QTY          Int     @default(0)
   P_IS_NO_BARCODE String  @default("N") @db.Char(1)
+  P_BOX_TYPE      String? @db.VarChar(20)
+  P_SUP_PRICE     Int     @default(0)
+  P_SUP_RATE      Decimal @default(0.00) @db.Decimal(5, 2)
 
   @@unique([P_CODE, P_GROUP], map: "NPS_p_code_inx")
-
   @@map("NPS_t_product")
 }
+

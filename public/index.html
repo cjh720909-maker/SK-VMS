@@ -82,6 +82,23 @@
                 </svg>
                 피킹 요약 (VMS)
             </div>
+            <div onclick="switchView('picking-list')" id="menu-picking-list"
+                class="sidebar-item w-full flex items-center px-4 py-3 rounded-xl font-medium text-left">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 17v-2m3 2v-4m3 2v-6m-8-4h.01M3 21h18M3 10h18M3 7h18M3 4h18"></path>
+                </svg>
+                피킹 리스트 (품목별)
+            </div>
+            <div onclick="switchView('picking-pivot')" id="menu-picking-pivot"
+                class="sidebar-item w-full flex items-center px-4 py-3 rounded-xl font-medium text-left">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z">
+                    </path>
+                </svg>
+                피킹 리스트 (피벗)
+            </div>
             <div onclick="switchView('analysis')" id="menu-analysis"
                 class="sidebar-item w-full flex items-center px-4 py-3 rounded-xl font-medium text-left">
                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -141,6 +158,24 @@
                 </svg>
                 주문 정보 엑셀 업로드
             </div>
+            <div onclick="switchView('order-list')" id="menu-order-list"
+                class="sidebar-item w-full flex items-center px-4 py-3 rounded-xl font-medium text-left">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01">
+                    </path>
+                </svg>
+                주문 조회
+            </div>
+            <div onclick="switchView('weight-list')" id="menu-weight-list"
+                class="sidebar-item w-full flex items-center px-4 py-3 rounded-xl font-medium text-left">
+                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3">
+                    </path>
+                </svg>
+                중량 조회
+            </div>
         </div>
         <div class="p-4 text-xs text-indigo-400 text-center">
             © 2026 Universal VMS
@@ -162,11 +197,35 @@
                 <!-- Level 1: Filter Area (Ultra Compact) -->
                 <div class="px-6 py-2 bg-slate-50 flex items-center justify-between gap-4">
                     <div class="flex items-center gap-4 flex-grow overflow-x-auto no-scrollbar">
+                        <!-- 날짜 선택 모드 (단일/기간) -->
+                        <div
+                            class="flex items-center gap-1.5 flex-shrink-0 bg-white/50 px-2 py-1 rounded border border-slate-200">
+                            <input type="checkbox" id="isSingleDate"
+                                class="w-3 h-3 text-indigo-600 rounded focus:ring-indigo-500 cursor-pointer">
+                            <label for="isSingleDate"
+                                class="text-[10px] font-bold text-slate-500 cursor-pointer select-none">단일 날짜</label>
+                        </div>
                         <div class="flex items-center gap-1.5 flex-shrink-0">
                             <span class="text-[10px] font-bold text-slate-400">기간</span>
-                            <input type="date" id="startDate" class="px-2 py-1 border rounded text-xs bg-white">
-                            <span class="text-slate-300">-</span>
-                            <input type="date" id="endDate" class="px-2 py-1 border rounded text-xs bg-white">
+                            <input type="date" id="startDate" value="2026-01-01"
+                                class="px-2 py-1 border rounded text-xs bg-white outline-none focus:ring-1 focus:ring-indigo-500">
+                            <span id="dateDash" class="text-slate-300">-</span>
+                            <input type="date" id="endDate" value="2026-03-31"
+                                class="px-2 py-1 border rounded text-xs bg-white outline-none focus:ring-1 focus:ring-indigo-500">
+                        </div>
+                        <div id="day-filter-group" class="hidden items-center gap-1.5 flex-shrink-0">
+                            <span class="text-[10px] font-bold text-slate-400">요일</span>
+                            <select id="daySelect" onchange="renderWeightTable()"
+                                class="px-2 py-1 border rounded text-xs bg-white outline-none">
+                                <option value="">전체 요일</option>
+                                <option value="1">월요일</option>
+                                <option value="2">화요일</option>
+                                <option value="3">수요일</option>
+                                <option value="4">목요일</option>
+                                <option value="5">금요일</option>
+                                <option value="6">토요일</option>
+                                <option value="0">일요일</option>
+                            </select>
                         </div>
                         <div id="driver-filter-group" class="flex items-center gap-2 flex-shrink-0">
                             <span class="text-[10px] font-bold text-slate-400 whitespace-nowrap">기사</span>
@@ -175,8 +234,31 @@
                         </div>
                         <div id="status-filter-group" class="hidden items-center gap-2 flex-shrink-0">
                             <span class="text-[10px] font-bold text-slate-400 whitespace-nowrap">통합조회</span>
-                            <input type="text" id="searchInput" placeholder="기사명 또는 거래처명" value="서원유통"
+                            <input type="text" id="searchInput" placeholder="기사명 또는 거래처명" value=""
                                 class="w-48 px-2 py-1 border rounded text-xs bg-white outline-none focus:ring-1 focus:ring-indigo-500">
+                        </div>
+                        <div id="product-filter-group" class="hidden items-center gap-2 flex-shrink-0">
+                            <span class="text-[10px] font-bold text-slate-400 whitespace-nowrap">제품검색</span>
+                            <input type="text" id="productSearchInput" placeholder="제품명 또는 바코드"
+                                class="w-48 px-2 py-1 border rounded text-xs bg-white outline-none focus:ring-1 focus:ring-indigo-500">
+                            <button onclick="openProductModal()"
+                                class="flex items-center gap-1 px-3 py-1 bg-indigo-600 text-white rounded text-[10px] font-bold hover:bg-indigo-700 transition-colors shadow-sm">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 4v16m8-8H4"></path>
+                                </svg>
+                                제품 추가
+                            </button>
+                            <button onclick="document.getElementById('productExcelInput').click()"
+                                class="flex items-center gap-1 px-3 py-1 bg-emerald-600 text-white rounded text-[10px] font-bold hover:bg-emerald-700 transition-colors shadow-sm">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                                </svg>
+                                엑셀 업로드
+                            </button>
+                            <input type="file" id="productExcelInput" class="hidden" accept=".xlsx, .xls"
+                                onchange="uploadProductExcel(this)">
                         </div>
                         <div id="analysis-filter-group" class="hidden items-center gap-2 flex-shrink-0">
                             <span class="text-[10px] font-bold text-slate-400 whitespace-nowrap">그룹</span>
@@ -190,12 +272,9 @@
                             </select>
                         </div>
                         <div id="customer-filter-group" class="flex items-center gap-1.5 flex-shrink-0">
-                            <span class="text-[10px] font-bold text-slate-400">고객사</span>
-                            <select id="custSelect" class="px-2 py-1 border rounded text-xs bg-white">
-                                <option value="">전체</option>
-                                <option value="대상">대상</option>
-                                <option value="하회마을">하회마을</option>
-                            </select>
+                            <span class="text-[10px] font-bold text-slate-400">거래처명</span>
+                            <input type="text" id="custSelect" placeholder="거래처명 입력"
+                                class="w-32 px-2 py-1 border rounded text-xs bg-white outline-none focus:ring-1 focus:ring-indigo-500">
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
@@ -213,125 +292,201 @@
                         </button>
                     </div>
                 </div>
+            </div>
 
-                <!-- Level 2: Summary Chips Area (Horizontal Flex Only) -->
-                <div class="px-6 py-2 bg-white">
-                    <div id="dispatch-summaryCards" class="view-content active summary-row active"></div>
-                    <div id="picking-summaryCards" class="view-content summary-row"></div>
-                    <div id="analysis-summaryCards" class="view-content summary-row"></div>
-                    <div id="status-summaryCards" class="view-content summary-row active !hidden"></div>
-                    <div id="product-summaryCards" class="view-content summary-row"></div>
-                    <div id="customer-summaryCards" class="view-content summary-row"></div>
-                    <div id="vehicle-summaryCards" class="view-content summary-row"></div>
-                    <div id="upload-summaryCards" class="view-content summary-row"></div>
+            <!-- Level 2: Summary Chips Area (Horizontal Flex Only) -->
+            <div class="px-6 py-2 bg-white">
+                <div id="dispatch-summaryCards" class="view-content active summary-row active"></div>
+                <div id="picking-summaryCards" class="view-content summary-row"></div>
+                <div id="analysis-summaryCards" class="view-content summary-row"></div>
+                <div id="status-summaryCards" class="view-content summary-row active !hidden"></div>
+                <div id="product-summaryCards" class="view-content summary-row"></div>
+                <div id="customer-summaryCards" class="view-content summary-row"></div>
+                <div id="vehicle-summaryCards" class="view-content summary-row"></div>
+                <div id="upload-summaryCards" class="view-content summary-row"></div>
+                <div id="order-list-summaryCards" class="view-content summary-row"></div>
+            </div>
+
+            <!-- Level 3: Consolidated Table Headers -->
+            <div
+                class="bg-slate-100 text-slate-500 font-bold text-[11px] uppercase tracking-wider border-t overflow-x-auto no-scrollbar">
+                <!-- Dispatch Header -->
+                <div id="dispatch-header" class="view-content active flex px-6 py-2 select-none">
+                    <div class="w-[50px] flex-shrink-0">No.</div>
+                    <div data-sort="driverName" onclick="handleSort('dispatch', 'driverName', 'string')"
+                        class="w-[100px] flex-shrink-0 cursor-pointer hover:text-indigo-600 transition-colors">기사명
+                    </div>
+                    <div data-sort="dispatchName" onclick="handleSort('dispatch', 'dispatchName', 'string')"
+                        class="w-[150px] flex-shrink-0 cursor-pointer hover:text-indigo-600 transition-colors">배차명
+                    </div>
+                    <div data-sort="destCount" onclick="handleSort('dispatch', 'destCount', 'number')"
+                        class="w-[100px] flex-shrink-0 text-right cursor-pointer hover:text-indigo-600 transition-colors">
+                        납품처</div>
+                    <div data-sort="totalCount" onclick="handleSort('dispatch', 'totalCount', 'number')"
+                        class="w-[100px] flex-shrink-0 text-right cursor-pointer hover:text-indigo-600 transition-colors">
+                        피킹</div>
+                    <div data-sort="totalWeight" onclick="handleSort('dispatch', 'totalWeight', 'number')"
+                        class="w-[110px] flex-shrink-0 text-right cursor-pointer hover:text-indigo-600 transition-colors">
+                        배차중량</div>
+                    <div data-sort="maxWeight" onclick="handleSort('dispatch', 'maxWeight', 'number')"
+                        class="w-[110px] shrink-0 text-right cursor-pointer hover:text-indigo-600 transition-colors">
+                        적재중량</div>
+                    <div class="w-[90px] flex-shrink-0 text-right">적재율</div>
+                    <div class="flex-grow text-center">점유율</div>
                 </div>
-
-                <!-- Level 3: Consolidated Table Headers -->
-                <div class="bg-slate-100 text-slate-500 font-bold text-[11px] uppercase tracking-wider border-t">
-                    <!-- Dispatch Header -->
-                    <div id="dispatch-header" class="view-content active flex px-6 py-2 select-none">
-                        <div class="w-[50px] flex-shrink-0">No.</div>
-                        <div data-sort="driverName" onclick="handleSort('dispatch', 'driverName', 'string')"
-                            class="w-[100px] flex-shrink-0 cursor-pointer hover:text-indigo-600 transition-colors">기사명
-                        </div>
-                        <div data-sort="dispatchName" onclick="handleSort('dispatch', 'dispatchName', 'string')"
-                            class="w-[150px] flex-shrink-0 cursor-pointer hover:text-indigo-600 transition-colors">배차명
-                        </div>
-                        <div data-sort="destCount" onclick="handleSort('dispatch', 'destCount', 'number')"
-                            class="w-[100px] flex-shrink-0 text-right cursor-pointer hover:text-indigo-600 transition-colors">
-                            납품처</div>
-                        <div data-sort="totalCount" onclick="handleSort('dispatch', 'totalCount', 'number')"
-                            class="w-[100px] flex-shrink-0 text-right cursor-pointer hover:text-indigo-600 transition-colors">
-                            피킹</div>
-                        <div data-sort="totalWeight" onclick="handleSort('dispatch', 'totalWeight', 'number')"
-                            class="w-[110px] flex-shrink-0 text-right cursor-pointer hover:text-indigo-600 transition-colors">
-                            배차중량</div>
-                        <div data-sort="maxWeight" onclick="handleSort('dispatch', 'maxWeight', 'number')"
-                            class="w-[110px] shrink-0 text-right cursor-pointer hover:text-indigo-600 transition-colors">
-                            적재중량</div>
-                        <div class="w-[90px] flex-shrink-0 text-right">적재율</div>
-                        <div class="flex-grow text-center">점유율</div>
+                <div id="picking-header" class="view-content flex px-6 py-2 select-none">
+                    <div class="w-[50px] flex-shrink-0 text-center">No.</div>
+                    <div data-sort="className" onclick="handleSort('picking', 'className', 'string')"
+                        class="w-[200px] flex-shrink-0 cursor-pointer hover:text-indigo-600 transition-colors">피킹
+                        분류명</div>
+                    <div data-sort="isDas" onclick="handleSort('picking', 'isDas', 'string')"
+                        class="w-[80px] flex-shrink-0 text-center cursor-pointer hover:text-indigo-600 transition-colors">
+                        DAS</div>
+                    <div data-sort="pickCount" onclick="handleSort('picking', 'pickCount', 'number')"
+                        class="w-[130px] flex-shrink-0 text-right cursor-pointer hover:text-indigo-600 transition-colors">
+                        피킹 건수</div>
+                    <div data-sort="totalQty" onclick="handleSort('picking', 'totalQty', 'number')"
+                        class="w-[140px] flex-shrink-0 text-right cursor-pointer hover:text-indigo-600 transition-colors">
+                        총 수량</div>
+                    <div data-sort="totalWeight" onclick="handleSort('picking', 'totalWeight', 'number')"
+                        class="w-[140px] flex-shrink-0 text-right cursor-pointer hover:text-indigo-600 transition-colors">
+                        총 중량</div>
+                    <div class="flex-grow text-center">비중</div>
+                </div>
+                <div id="picking-list-header" class="view-content flex px-6 py-2 select-none">
+                    <div class="flex-grow flex items-center">
+                        <span class="text-indigo-600 font-bold mr-2">●</span>
+                        <span class="text-slate-700 font-bold">품목별 피킹 리스트 (거래처별 상세 내역 및 박스/낱개 자동 계산)</span>
                     </div>
-                    <div id="picking-header" class="view-content flex px-6 py-2 select-none">
-                        <div class="w-[50px] flex-shrink-0 text-center">No.</div>
-                        <div data-sort="className" onclick="handleSort('picking', 'className', 'string')"
-                            class="w-[200px] flex-shrink-0 cursor-pointer hover:text-indigo-600 transition-colors">피킹
-                            분류명</div>
-                        <div data-sort="isDas" onclick="handleSort('picking', 'isDas', 'string')"
-                            class="w-[80px] flex-shrink-0 text-center cursor-pointer hover:text-indigo-600 transition-colors">
-                            DAS</div>
-                        <div data-sort="pickCount" onclick="handleSort('picking', 'pickCount', 'number')"
-                            class="w-[130px] flex-shrink-0 text-right cursor-pointer hover:text-indigo-600 transition-colors">
-                            피킹 건수</div>
-                        <div data-sort="totalQty" onclick="handleSort('picking', 'totalQty', 'number')"
-                            class="w-[140px] flex-shrink-0 text-right cursor-pointer hover:text-indigo-600 transition-colors">
-                            총 수량</div>
-                        <div data-sort="totalWeight" onclick="handleSort('picking', 'totalWeight', 'number')"
-                            class="w-[140px] flex-shrink-0 text-right cursor-pointer hover:text-indigo-600 transition-colors">
-                            총 중량</div>
-                        <div class="flex-grow text-center">비중</div>
+                </div>
+                <div id="picking-pivot-header" class="view-content flex px-6 py-2 select-none">
+                    <div class="w-[250px] flex-shrink-0 text-indigo-600 font-bold border-r border-slate-200">품목명 / 차량명
                     </div>
-                    <!-- Analysis Header -->
-                    <div id="analysis-header" class="view-content flex px-6 py-2 select-none">
-                        <div class="w-[50px] flex-shrink-0 text-center">No.</div>
-                        <div data-sort="groupName" onclick="handleSort('analysis', 'groupName', 'string')"
-                            class="w-[130px] flex-shrink-0 cursor-pointer hover:text-indigo-600 transition-colors">피킹그룹
-                        </div>
-                        <div data-sort="driverName" onclick="handleSort('analysis', 'driverName', 'string')"
-                            class="w-[150px] flex-shrink-0 cursor-pointer hover:text-indigo-600 transition-colors">배차명
-                        </div>
-                        <div data-sort="dockNo" onclick="handleSort('analysis', 'dockNo', 'string')"
-                            class="w-[80px] flex-shrink-0 text-center cursor-pointer hover:text-indigo-600 transition-colors">
-                            도크</div>
-                        <div data-sort="totalBoxes" onclick="handleSort('analysis', 'totalBoxes', 'number')"
-                            class="w-[100px] flex-shrink-0 text-right cursor-pointer hover:text-indigo-600 transition-colors">
-                            박스</div>
-                        <div data-sort="totalItems" onclick="handleSort('analysis', 'totalItems', 'number')"
-                            class="w-[100px] flex-shrink-0 text-right cursor-pointer hover:text-indigo-600 transition-colors">
-                            낱개</div>
-                        <div data-sort="pickCount" onclick="handleSort('analysis', 'pickCount', 'number')"
-                            class="w-[100px] flex-shrink-0 text-right cursor-pointer hover:text-indigo-600 transition-colors">
-                            피킹</div>
-                        <div data-sort="totalQty" onclick="handleSort('analysis', 'totalQty', 'number')"
-                            class="w-[110px] flex-shrink-0 text-right cursor-pointer hover:text-indigo-600 transition-colors">
-                            총수량</div>
-                        <div data-sort="totalWeight" onclick="handleSort('analysis', 'totalWeight', 'number')"
-                            class="w-[110px] flex-shrink-0 text-right cursor-pointer hover:text-indigo-600 transition-colors">
-                            총중량</div>
-                        <div class="flex-grow text-center">비중</div>
+                    <div class="flex-grow flex items-center px-4">
+                        <span class="text-slate-400 italic font-normal">차량별 상세 피킹 현황을 가로로 넓게 확인하실 수 있습니다.</span>
                     </div>
-                    <!-- Status Header -->
-                    <div id="status-header"
-                        class="view-content flex px-6 py-2 select-none overflow-x-auto no-scrollbar">
-                        <div class="w-[50px] flex-shrink-0 text-center">No.</div>
-                        <div class="flex-grow text-slate-400 font-normal italic">데이터를 조회하면 컬럼이 자동으로 표시됩니다.</div>
+                </div>
+                <div id="analysis-header" class="view-content flex px-6 py-2 select-none">
+                    <div class="w-[50px] flex-shrink-0 text-center">No.</div>
+                    <div data-sort="groupName" onclick="handleSort('analysis', 'groupName', 'string')"
+                        class="w-[130px] flex-shrink-0 cursor-pointer hover:text-indigo-600 transition-colors">피킹그룹
                     </div>
-                    <!-- Product Header -->
-                    <div id="product-header" class="view-content flex px-6 py-2 select-none">
-                        <div class="w-[100px] flex-shrink-0">제품코드</div>
-                        <div class="w-[250px] flex-shrink-0">제품명</div>
-                        <div class="w-[100px] flex-shrink-0">규격</div>
-                        <div class="w-[100px] flex-shrink-0 text-right">입수</div>
-                        <div class="flex-grow">분류</div>
+                    <div data-sort="driverName" onclick="handleSort('analysis', 'driverName', 'string')"
+                        class="w-[150px] flex-shrink-0 cursor-pointer hover:text-indigo-600 transition-colors">배차명
                     </div>
-                    <!-- Customer Header -->
-                    <div id="customer-header" class="view-content flex px-6 py-2 select-none">
-                        <div class="w-[120px] flex-shrink-0">거래처코드</div>
-                        <div class="w-[200px] flex-shrink-0">거래처명</div>
-                        <div class="w-[150px] flex-shrink-0">대표자</div>
-                        <div class="flex-grow">주소</div>
+                    <div data-sort="dockNo" onclick="handleSort('analysis', 'dockNo', 'string')"
+                        class="w-[80px] flex-shrink-0 text-center cursor-pointer hover:text-indigo-600 transition-colors">
+                        도크</div>
+                    <div data-sort="totalBoxes" onclick="handleSort('analysis', 'totalBoxes', 'number')"
+                        class="w-[100px] flex-shrink-0 text-right cursor-pointer hover:text-indigo-600 transition-colors">
+                        박스</div>
+                    <div data-sort="totalItems" onclick="handleSort('analysis', 'totalItems', 'number')"
+                        class="w-[100px] flex-shrink-0 text-right cursor-pointer hover:text-indigo-600 transition-colors">
+                        낱개</div>
+                    <div data-sort="pickCount" onclick="handleSort('analysis', 'pickCount', 'number')"
+                        class="w-[100px] flex-shrink-0 text-right cursor-pointer hover:text-indigo-600 transition-colors">
+                        피킹</div>
+                    <div data-sort="totalQty" onclick="handleSort('analysis', 'totalQty', 'number')"
+                        class="w-[110px] flex-shrink-0 text-right cursor-pointer hover:text-indigo-600 transition-colors">
+                        총수량</div>
+                    <div data-sort="totalWeight" onclick="handleSort('analysis', 'totalWeight', 'number')"
+                        class="w-[110px] flex-shrink-0 text-right cursor-pointer hover:text-indigo-600 transition-colors">
+                        총중량</div>
+                    <div class="flex-grow text-center">비중</div>
+                </div>
+                <!-- Status Header -->
+                <div id="status-header" class="view-content flex px-6 py-2 select-none overflow-x-auto no-scrollbar">
+                    <div class="w-[50px] flex-shrink-0 text-center">No.</div>
+                    <div class="flex-grow text-slate-400 font-normal italic">데이터를 조회하면 컬럼이 자동으로 표시됩니다.</div>
+                </div>
+                <!-- Product Header -->
+                <div id="product-header" class="view-content flex px-6 py-2 select-none min-w-[1600px]">
+                    <div class="w-[50px] flex-shrink-0">No.</div>
+                    <div class="w-[120px] flex-shrink-0">제품코드</div>
+                    <div class="w-[120px] flex-shrink-0 text-indigo-600">바코드</div>
+                    <div class="w-[200px] flex-shrink-0">제품명</div>
+                    <div class="w-[100px] flex-shrink-0">제품구분</div>
+                    <div class="w-[80px] flex-shrink-0 text-right">중량</div>
+                    <div class="w-[100px] flex-shrink-0 text-center">유통기한</div>
+                    <div class="w-[100px] flex-shrink-0 text-center">박스구분</div>
+                    <div class="w-[100px] flex-shrink-0 text-center">박스Type</div>
+                    <div class="w-[80px] flex-shrink-0 text-right">입수량</div>
+                    <div class="w-[80px] flex-shrink-0 text-center">품온</div>
+                    <div class="w-[120px] flex-shrink-0 truncate text-center">생산처</div>
+                    <div class="w-[70px] flex-shrink-0 text-center">면/과세</div>
+                    <div class="w-[100px] flex-shrink-0 text-right">판매가</div>
+                    <div class="w-[100px] flex-shrink-0 text-right text-emerald-600">공급가</div>
+                    <div class="w-[70px] flex-shrink-0 text-right text-emerald-600">공급율</div>
+                    <div class="flex-grow text-center">비고</div>
+                </div>
+                <!-- Order List Header -->
+                <div id="order-list-header" class="view-content flex px-6 py-2 select-none min-w-[1700px]">
+                    <div class="w-[50px] flex-shrink-0">No.</div>
+                    <div class="w-[90px] flex-shrink-0">주문일자</div>
+                    <div class="w-[90px] flex-shrink-0">출고일자</div>
+                    <div class="w-[110px] flex-shrink-0">바코드</div>
+                    <div class="w-[80px] flex-shrink-0">품목코드</div>
+                    <div class="w-[180px] flex-shrink-0">품명</div>
+                    <div class="w-[80px] flex-shrink-0">품목군</div>
+                    <div class="w-[70px] flex-shrink-0">판매상태</div>
+                    <div class="w-[100px] flex-shrink-0">생산처</div>
+                    <div class="w-[60px] flex-shrink-0 text-right">수량</div>
+                    <div class="w-[50px] flex-shrink-0 text-right pr-2">입수</div>
+                    <div class="w-[50px] flex-shrink-0 text-right pr-2">박스</div>
+                    <div class="w-[50px] flex-shrink-0 text-right pr-2">낱개</div>
+                    <div class="w-[90px] flex-shrink-0 text-right">합계</div>
+                    <div class="w-[100px] flex-shrink-0 text-right text-indigo-600 border-r border-indigo-100 pr-4">
+                        총중량</div>
+                    <div class="w-[150px] flex-shrink-0 pl-4">거래처</div>
+                    <div class="flex-grow text-center">차량</div>
+                </div>
+                <div id="weight-list-header" class="view-content flex px-6 py-2 select-none">
+                    <div class="w-[50px] flex-shrink-0">No.</div>
+                    <div class="w-[125px] flex-shrink-0 text-center cursor-pointer hover:text-indigo-600"
+                        onclick="sortWeightTable('B_DATE')">
+                        날짜 <span id="sort-icon-B_DATE"></span>
                     </div>
-                    <!-- Vehicle Header -->
-                    <div id="vehicle-header" class="view-content flex px-6 py-2 select-none">
-                        <div class="w-[100px] flex-shrink-0">차량번호</div>
-                        <div class="w-[120px] flex-shrink-0">기사명</div>
-                        <div class="w-[100px] flex-shrink-0 text-right">최대적재량</div>
-                        <div class="flex-grow">비고</div>
+                    <div class="w-[200px] flex-shrink-0 font-bold cursor-pointer hover:text-indigo-600"
+                        onclick="sortWeightTable('B_C_NAME')">
+                        거래처명 <span id="sort-icon-B_C_NAME"></span>
                     </div>
-                    <!-- Upload Header -->
-                    <div id="upload-header" class="view-content flex px-6 py-2 select-none">
-                        <div class="flex-grow text-center">엑셀 파일 업로드 현황</div>
-                    </div>
+                    <div class="w-[100px] flex-shrink-0 text-right pr-4">아이템수</div>
+                    <div class="w-[100px] flex-shrink-0 text-right pr-4">총 낱개수</div>
+                    <div class="flex-grow text-right text-indigo-600 font-bold pr-12">총중량 (kg)</div>
+                </div>
+                <div id="customer-header" class="view-content flex px-6 py-2 select-none">
+                    <div class="w-[120px] flex-shrink-0">거래처코드</div>
+                    <div class="w-[200px] flex-shrink-0">거래처명</div>
+                    <div class="w-[150px] flex-shrink-0">대표자</div>
+                    <div class="flex-grow">주소</div>
+                </div>
+                <!-- Vehicle Header -->
+                <div id="vehicle-header" class="view-content flex px-6 py-2 select-none">
+                    <div class="w-[100px] flex-shrink-0">차량번호</div>
+                    <div class="w-[120px] flex-shrink-0">기사명</div>
+                    <div class="w-[100px] flex-shrink-0 text-right">최대적재량</div>
+                    <div class="flex-grow">비고</div>
+                </div>
+                <!-- Upload Header -->
+                <div id="upload-header" class="view-content flex px-6 py-2 select-none">
+                    <div class="flex-grow text-center">엑셀 파일 업로드 현황</div>
+                </div>
+                <!-- Customer Master Header -->
+                <div id="customer-header" class="view-content flex px-6 py-2 select-none">
+                    <div class="w-[100px] flex-shrink-0">거래처코드</div>
+                    <div class="w-[200px] flex-shrink-0">거래처명</div>
+                    <div class="w-[120px] flex-shrink-0">대표자</div>
+                    <div class="w-[150px] flex-shrink-0">전화번호</div>
+                    <div class="flex-grow">주소</div>
+                </div>
+                <!-- Vehicle Master Header -->
+                <div id="vehicle-header" class="view-content flex px-6 py-2 select-none">
+                    <div class="w-[120px] flex-shrink-0">배차명(ID)</div>
+                    <div class="w-[100px] flex-shrink-0">기사명</div>
+                    <div class="w-[120px] flex-shrink-0">차량번호</div>
+                    <div class="w-[80px] flex-shrink-0 text-right">적재량</div>
+                    <div class="w-[80px] flex-shrink-0 text-center">도크</div>
+                    <div class="flex-grow">비고</div>
                 </div>
             </div>
         </div>
@@ -366,6 +521,24 @@
                     </div>
                 </div>
 
+                <!-- Picking List View Container -->
+                <div id="view-picking-list" class="view-content">
+                    <div class="bg-white border rounded shadow-sm overflow-x-auto" id="picking-list-container">
+                        <div class="p-12 text-center text-slate-400 font-medium">
+                            날짜를 선택하고 '조회' 버튼을 눌러주세요.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Picking Pivot View Container -->
+                <div id="view-picking-pivot" class="view-content">
+                    <div class="bg-white border rounded shadow-sm overflow-x-auto" id="picking-pivot-container">
+                        <div class="p-12 text-center text-slate-400 font-medium">
+                            날짜를 선택하고 '조회' 버튼을 눌러주세요.
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Analysis View Container -->
                 <div id="view-analysis" class="view-content">
                     <div class="bg-white border rounded shadow-sm overflow-hidden">
@@ -392,47 +565,140 @@
                     </div>
                 </div>
 
+                <!-- Order List View Container -->
+                <div id="view-order-list" class="view-content">
+                    <div class="bg-white border rounded shadow-sm overflow-x-auto">
+                        <div id="order-list-tableBody" class="min-w-[1700px]">
+                            <div class="p-8 text-center text-slate-400">조회 기간을 설정해주세요.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Weight Summary View Container -->
+                <div id="view-weight-list" class="view-content">
+                    <div class="bg-white border rounded shadow-sm overflow-hidden" id="weight-list-tableBody">
+                        <div class="p-8 text-center text-slate-400">날짜를 설정하여 조회해주세요.</div>
+                    </div>
+                </div>
+
                 <!-- Product View Container -->
                 <div id="view-product" class="view-content">
-                    <div class="bg-white border rounded shadow-sm p-8 text-center text-slate-400">
-                        <div class="mb-4 text-indigo-600">📦</div>
-                        제품 정보 관리 기능 준비 중입니다.
+                    <div class="bg-white border rounded shadow-sm overflow-x-auto">
+                        <div id="product-tableBody" class="min-w-[1600px]">
+                            <div class="p-8 text-center text-slate-400">제품 정보를 조회해주세요.</div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Customer View Container -->
                 <div id="view-customer" class="view-content">
-                    <div class="bg-white border rounded shadow-sm p-8 text-center text-slate-400">
-                        <div class="mb-4 text-indigo-600">🏢</div>
-                        거래처 정보 관리 기능 준비 중입니다.
+                    <!-- 등록 폼 -->
+                    <div class="bg-indigo-50 border border-indigo-100 rounded p-4 mb-4 flex gap-4 items-end">
+                        <div class="flex-1">
+                            <label class="block text-[10px] font-bold text-indigo-400 mb-1">거래처명</label>
+                            <input type="text" id="custMaster_name"
+                                class="w-full px-2 py-1.5 border rounded text-sm outline-none">
+                        </div>
+                        <div class="w-24">
+                            <label class="block text-[10px] font-bold text-indigo-400 mb-1">코드</label>
+                            <input type="text" id="custMaster_code"
+                                class="w-full px-2 py-1.5 border rounded text-sm outline-none">
+                        </div>
+                        <div class="w-32">
+                            <label class="block text-[10px] font-bold text-indigo-400 mb-1">전화번호</label>
+                            <input type="text" id="custMaster_tel"
+                                class="w-full px-2 py-1.5 border rounded text-sm outline-none">
+                        </div>
+                        <div class="flex-[1.5]">
+                            <label class="block text-[10px] font-bold text-indigo-400 mb-1">주소</label>
+                            <input type="text" id="custMaster_address"
+                                class="w-full px-2 py-1.5 border rounded text-sm outline-none">
+                        </div>
+                        <button onclick="saveCustomerMaster()"
+                            class="px-4 py-2 bg-indigo-600 text-white rounded font-bold text-sm hover:bg-indigo-700">추가</button>
+                    </div>
+                    <div class="bg-white border rounded shadow-sm overflow-hidden" id="customer-master-tableBody">
+                        <div class="p-8 text-center text-slate-400">거래처 정보를 조회중입니다...</div>
                     </div>
                 </div>
 
                 <!-- Vehicle View Container -->
                 <div id="view-vehicle" class="view-content">
-                    <div class="bg-white border rounded shadow-sm p-8 text-center text-slate-400">
-                        <div class="mb-4 text-indigo-600">🚚</div>
-                        차량 정보 관리 기능 준비 중입니다.
+                    <!-- 등록 폼 -->
+                    <div class="bg-emerald-50 border border-emerald-100 rounded p-4 mb-4 flex gap-4 items-end">
+                        <div class="w-32">
+                            <label class="block text-[10px] font-bold text-emerald-600 mb-1">배차명(ID)</label>
+                            <input type="text" id="car_driver"
+                                class="w-full px-2 py-1.5 border rounded text-sm outline-none" placeholder="예: 김배차">
+                        </div>
+                        <div class="w-24">
+                            <label class="block text-[10px] font-bold text-emerald-600 mb-1">기사명</label>
+                            <input type="text" id="car_name"
+                                class="w-full px-2 py-1.5 border rounded text-sm outline-none">
+                        </div>
+                        <div class="w-32">
+                            <label class="block text-[10px] font-bold text-emerald-600 mb-1">차량번호</label>
+                            <input type="text" id="car_no"
+                                class="w-full px-2 py-1.5 border rounded text-sm outline-none">
+                        </div>
+                        <div class="w-20">
+                            <label class="block text-[10px] font-bold text-emerald-600 mb-1">적재량(t)</label>
+                            <input type="number" id="car_kg"
+                                class="w-full px-2 py-1.5 border rounded text-sm outline-none" step="0.1">
+                        </div>
+                        <div class="w-16">
+                            <label class="block text-[10px] font-bold text-emerald-600 mb-1">도크</label>
+                            <input type="text" id="car_dock"
+                                class="w-full px-2 py-1.5 border rounded text-sm outline-none">
+                        </div>
+                        <button onclick="saveCar()"
+                            class="px-4 py-2 bg-emerald-600 text-white rounded font-bold text-sm hover:bg-emerald-700">차량
+                            추가</button>
+                    </div>
+                    <div class="bg-white border rounded shadow-sm overflow-hidden" id="vehicle-tableBody">
+                        <div class="p-8 text-center text-slate-400">차량 정보를 조회중입니다...</div>
                     </div>
                 </div>
 
                 <!-- Upload View Container -->
                 <div id="view-upload" class="view-content">
-                    <div class="bg-white border rounded shadow-sm p-12 text-center text-slate-400">
-                        <div class="mb-6">
-                            <svg class="w-16 h-16 mx-auto text-indigo-200" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
-                                </path>
-                            </svg>
+                    <div class="bg-white border rounded shadow-sm p-8 text-center text-slate-400 mb-6">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-4">
+                                <svg class="w-10 h-10 text-indigo-200" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
+                                    </path>
+                                </svg>
+                                <div class="text-left">
+                                    <div class="text-lg font-bold text-slate-700">주문 정보 엑셀 업로드</div>
+                                    <p class="text-xs text-slate-400">정보 파일의 [주문] 시트를 업로드하면 기존 데이터가 초기화됩니다.</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <input type="file" id="excelFileInput" accept=".xlsx, .xls" class="hidden"
+                                    onchange="document.getElementById('fileNameDisplay').innerText = this.files[0]?.name || '선택된 파일 없음'" />
+                                <label for="excelFileInput"
+                                    class="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-bold cursor-pointer hover:bg-slate-200 border border-slate-200">파일
+                                    선택</label>
+                                <div id="fileNameDisplay" class="text-xs text-slate-400 italic w-32 truncate">선택된 파일 없음
+                                </div>
+                                <button id="uploadBtn" onclick="uploadExcel()"
+                                    class="px-6 py-2 bg-indigo-600 text-white rounded-lg font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 text-sm">데이터
+                                    업로드 시작</button>
+                            </div>
                         </div>
-                        <div class="text-lg font-medium text-slate-600 mb-2">주문 정보 엑셀 업로드</div>
-                        <p class="mb-6">발주 데이터를 엑셀 파일로 업로드하여 수동 배차를 시작하세요.</p>
-                        <button
-                            class="px-6 py-3 bg-indigo-600 text-white rounded-lg font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200">
-                            파일 선택하기
-                        </button>
+                        <div id="uploadStatusText" class="mt-2 text-xs text-indigo-500 font-bold"></div>
+                    </div>
+
+                    <!-- Integrated Order Details Table -->
+                    <div class="bg-white border rounded shadow-sm overflow-x-auto">
+                        <div id="upload-detail-tableBody" class="min-w-[1700px]">
+                            <!-- This will be populated by list.js logic but within upload view -->
+                            <div class="p-8 text-center text-slate-400 font-medium">업로드 후 주문 상세 내역을 여기서 바로 확인하실 수 있습니다.
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -473,18 +739,132 @@
         </div>
     </div>
 
-    <!-- Scripts -->
+    <!-- Product Edit/Add Modal -->
+    <div id="product-modal"
+        class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+        <div
+            class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+            <form id="product-form" onsubmit="saveProduct(event)">
+                <div class="p-6 border-b border-slate-100 flex items-center justify-between bg-indigo-600 text-white">
+                    <div>
+                        <h3 class="font-bold text-lg" id="product-modal-title">제품 정보 등록/수정</h3>
+                    </div>
+                    <button type="button" onclick="closeProductModal()"
+                        class="p-2 hover:bg-indigo-500 rounded-full transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div class="p-6 grid grid-cols-2 gap-4 max-h-[70vh] overflow-y-auto">
+                    <input type="hidden" name="P_IDX" id="prod_idx">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 mb-1">제품코드</label>
+                        <input type="text" name="P_CODE" id="prod_code" required
+                            class="w-full px-3 py-2 border rounded-lg text-sm bg-slate-50 focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 mb-1">바코드</label>
+                        <input type="text" name="P_BARCODE" id="prod_barcode"
+                            class="w-full px-3 py-2 border rounded-lg text-sm bg-slate-50 focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-[10px] font-bold text-slate-400 mb-1">제품명</label>
+                        <input type="text" name="P_NAME" id="prod_name" required
+                            class="w-full px-3 py-2 border rounded-lg text-sm bg-slate-50 focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 mb-1">제품분류(Category)</label>
+                        <input type="text" name="P_GROUP" id="prod_group"
+                            class="w-full px-3 py-2 border rounded-lg text-sm bg-slate-50 focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 mb-1">생산처</label>
+                        <input type="text" name="P_MAKER" id="prod_maker"
+                            class="w-full px-3 py-2 border rounded-lg text-sm bg-slate-50 focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 mb-1">중량(kg)</label>
+                        <input type="number" step="0.01" name="P_KG" id="prod_kg"
+                            class="w-full px-3 py-2 border rounded-lg text-sm bg-slate-50 focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 mb-1">입수량(Ipsu)</label>
+                        <input type="number" name="P_IPSU" id="prod_ipsu" value="1"
+                            class="w-full px-3 py-2 border rounded-lg text-sm bg-slate-50 focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 mb-1">박스당중량(PiBox)</label>
+                        <input type="number" name="P_PIBOX" id="prod_pibox"
+                            class="w-full px-3 py-2 border rounded-lg text-sm bg-slate-50 focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 mb-1">박스Type</label>
+                        <input type="text" name="P_BOX_TYPE" id="prod_box_type"
+                            class="w-full px-3 py-2 border rounded-lg text-sm bg-slate-50 focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 mb-1">판매가</label>
+                        <input type="number" name="P_DAN" id="prod_dan"
+                            class="w-full px-3 py-2 border rounded-lg text-sm bg-slate-50 focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 mb-1">공급가</label>
+                        <input type="number" name="P_SUP_PRICE" id="prod_sup_price"
+                            class="w-full px-3 py-2 border rounded-lg text-sm bg-slate-50 focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-[10px] font-bold text-slate-400 mb-1">메모</label>
+                        <textarea name="P_MEMO" id="prod_memo" rows="2"
+                            class="w-full px-3 py-2 border rounded-lg text-sm bg-slate-50 focus:ring-2 focus:ring-indigo-500 outline-none"></textarea>
+                    </div>
+                </div>
+                <div class="p-6 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+                    <button type="button" onclick="closeProductModal()"
+                        class="px-4 py-2 text-slate-600 font-bold hover:bg-slate-200 rounded-lg text-sm transition-colors">취소</button>
+                    <button type="submit"
+                        class="px-6 py-2 bg-indigo-600 text-white font-bold hover:bg-indigo-700 rounded-lg text-sm transition-all shadow-lg shadow-indigo-100">저장하기</button>
+                </div>
+            </form>
+        </div>
+    </div>
     <script src="/common.js"></script>
     <script src="/dispatch.js"></script>
     <script src="/picking.js"></script>
+    <script src="/picking-list.js"></script>
+    <script src="/picking-pivot.js"></script>
     <script src="/analysis.js"></script>
     <script src="/status.js"></script>
+    <script src="/product.js"></script>
+    <script src="/upload.js"></script>
+    <script src="/list.js"></script>
+    <script src="/master.js"></script>
+    <script src="/weight.js"></script>
     <script>
+        // 초기 날짜 설정 (전역)
+        document.addEventListener('DOMContentLoaded', () => {
+            const sDate = document.getElementById('startDate');
+            const eDate = document.getElementById('endDate');
+            if (sDate) sDate.value = '2026-01-01';
+            if (eDate) eDate.value = '2026-03-31';
+        });
+
         let currentView = 'dispatch';
 
         // View Switching Logic (Display Only - No State Reset)
         function switchView(view) {
+            // 현재 뷰의 상태 저장
+            if (typeof saveViewState === 'function') {
+                saveViewState(currentView);
+            }
+
             currentView = view;
+
+            // 새로운 뷰의 상태 복원
+            if (typeof loadViewState === 'function') {
+                loadViewState(view);
+            }
 
             // UI Update
             document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
@@ -501,7 +881,9 @@
                 'product': 'Universal VMS - 제품 정보 관리',
                 'customer': 'Universal VMS - 거래처 정보 관리',
                 'vehicle': 'Universal VMS - 차량 정보 관리',
-                'upload': 'Universal VMS - 주문 정보 엑셀 업로드'
+                'upload': 'Universal VMS - 주문 엑셀 업로드 및 상세 조회',
+                'order-list': 'Universal VMS - 주문 조회',
+                'weight-list': 'Universal VMS - 중량 조회'
             };
             document.getElementById('page-title').innerText = pageTitles[view];
 
@@ -528,6 +910,30 @@
                 statusFilter.style.display = 'flex';
                 customerFilter.style.display = 'flex';
                 document.getElementById('syncBtn').style.display = 'none'; // MySQL 직접조회는 동기화 불필요
+            } else if (view === 'order-list') {
+                document.getElementById('status-filter-group').style.display = 'flex';
+                document.getElementById('customer-filter-group').style.display = 'none';
+                document.getElementById('syncBtn').style.display = 'none';
+                fetchOrderList();
+            } else if (view === 'product') {
+                document.getElementById('product-filter-group').style.display = 'flex';
+                document.getElementById('syncBtn').style.display = 'none';
+                fetchProductData();
+            } else if (view === 'customer') {
+                document.getElementById('product-filter-group').style.display = 'none';
+                document.getElementById('syncBtn').style.display = 'none';
+                fetchCustomerMaster();
+            } else if (view === 'vehicle') {
+                document.getElementById('product-filter-group').style.display = 'none';
+                document.getElementById('syncBtn').style.display = 'none';
+                fetchCars();
+            } else if (view === 'weight-list') {
+                document.getElementById('product-filter-group').style.display = 'none';
+                document.getElementById('customer-filter-group').style.display = 'flex';
+                document.getElementById('day-filter-group').style.display = 'flex';
+                document.getElementById('status-filter-group').style.display = 'none';
+                document.getElementById('syncBtn').style.display = 'none';
+                fetchWeightSummary();
             } else {
                 // For direct management views, hide sync button for now
                 document.getElementById('syncBtn').style.display = 'none';
@@ -535,25 +941,66 @@
 
             // Summary & Header control
             document.querySelectorAll('.summary-row').forEach(el => el.classList.remove('active'));
-            const summaryEl = document.getElementById(view + '-summaryCards');
+            let summaryId = view + '-summaryCards';
+            if (view === 'upload') summaryId = 'order-list-summaryCards';
+            const summaryEl = document.getElementById(summaryId);
             if (summaryEl) summaryEl.classList.add('active');
 
-            const headers = ['dispatch-header', 'picking-header', 'analysis-header', 'status-header', 'product-header', 'customer-header', 'vehicle-header', 'upload-header'];
+            const headers = ['dispatch-header', 'picking-header', 'picking-list-header', 'picking-pivot-header', 'analysis-header', 'status-header', 'product-header', 'customer-header', 'vehicle-header', 'upload-header', 'order-list-header', 'weight-list-header'];
             headers.forEach(hId => {
                 const hEl = document.getElementById(hId);
-                if (hId === view + '-header') hEl.classList.add('active');
+                if (!hEl) return;
+                // 'upload' view also needs to see 'order-list-header'
+                if (hId === view + '-header' || (view === 'upload' && hId === 'order-list-header')) hEl.classList.add('active');
                 else hEl.classList.remove('active');
             });
+
+            if (view === 'upload') {
+                statusFilter.style.display = 'flex'; // show search for combined upload/list view
+                fetchOrderList(); // initial load in upload view
+            }
 
             // URL Update
             window.history.pushState({}, '', '/' + view);
         }
 
+        // 단일 날짜 모드 로직
+        document.addEventListener('DOMContentLoaded', () => {
+            const isSingleDate = document.getElementById('isSingleDate');
+            const startDate = document.getElementById('startDate');
+            const endDate = document.getElementById('endDate');
+            const dateDash = document.getElementById('dateDash');
+
+            if (isSingleDate && startDate && endDate) {
+                isSingleDate.addEventListener('change', (e) => {
+                    if (e.target.checked) {
+                        endDate.style.display = 'none';
+                        if (dateDash) dateDash.style.display = 'none';
+                        endDate.value = startDate.value;
+                    } else {
+                        endDate.style.display = 'inline-block';
+                        if (dateDash) dateDash.style.display = 'inline-block';
+                    }
+                });
+
+                startDate.addEventListener('change', () => {
+                    if (isSingleDate.checked) {
+                        endDate.value = startDate.value;
+                    }
+                });
+            }
+        });
+
         // Global fetchData proxy
         function fetchData() {
             if (currentView === 'dispatch') fetchDispatchData();
             else if (currentView === 'picking') fetchPickingData();
+            else if (currentView === 'picking-list') fetchPickingList();
+            else if (currentView === 'picking-pivot') fetchPickingPivot();
             else if (currentView === 'analysis') fetchAnalysisData();
+            else if (currentView === 'order-list') fetchOrderList();
+            else if (currentView === 'weight-list') fetchWeightSummary();
+            else if (currentView === 'product') fetchProductData();
             else fetchStatusData();
         }
 
@@ -561,15 +1008,50 @@
         window.onload = () => {
             const path = window.location.pathname;
             if (path.includes('analysis')) switchView('analysis');
+            else if (path.includes('picking-list')) switchView('picking-list');
+            else if (path.includes('picking-pivot')) switchView('picking-pivot');
             else if (path.includes('picking')) switchView('picking');
+            else if (path.includes('order-list')) switchView('order-list');
+            else if (path.includes('weight-list')) switchView('weight-list');
+            else if (path.includes('upload')) switchView('upload');
+            else if (path.includes('product')) switchView('product');
+            else if (path.includes('customer')) switchView('customer');
+            else if (path.includes('vehicle')) switchView('vehicle');
             else switchView('dispatch');
         };
+
+        // Sync horizontally scrolling for Products
+        const productHeader = document.getElementById('product-header').parentElement;
+        const productTable = document.getElementById('product-tableBody').parentElement;
+
+        productTable.addEventListener('scroll', () => {
+            productHeader.scrollLeft = productTable.scrollLeft;
+        });
+
+        productHeader.addEventListener('scroll', () => {
+            productTable.scrollLeft = productHeader.scrollLeft;
+        });
+
+        // Sync horizontally scrolling for Order List
+        const orderHeader = document.getElementById('order-list-header').parentElement;
+        const orderTable = document.getElementById('order-list-tableBody').parentElement;
+
+        orderTable.addEventListener('scroll', () => {
+            orderHeader.scrollLeft = orderTable.scrollLeft;
+        });
+
+        orderHeader.addEventListener('scroll', () => {
+            orderTable.scrollLeft = orderHeader.scrollLeft;
+        });
 
         // Enter key listener
         document.getElementById('driverInput').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') fetchData();
         });
         document.getElementById('searchInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') fetchData();
+        });
+        document.getElementById('custSelect').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') fetchData();
         });
     </script>
