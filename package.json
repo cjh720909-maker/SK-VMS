@@ -1,7 +1,7 @@
 {
   "name": "universal-vms",
   "version": "1.0.0",
-  "description": "Universal VMS Dispatch & Picking Summary Dashboard",
+  "description": "SK-VMS Dispatch & Picking Summary Dashboard",
   "main": "api/index.js",
   "scripts": {
     "start": "node api/index.js",

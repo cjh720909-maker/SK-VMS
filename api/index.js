@@ -792,6 +792,6 @@ module.exports = app;
 // Only listen if not in a serverless environment (Vercel sets VERCEL_REGION)
 if (!process.env.VERCEL) {
     app.listen(port, () => {
-        console.log(`🚚 Universal VMS 가동 중: http://localhost:${port}`);
+        console.log(`🚚 SK-VMS 가동 중: http://localhost:${port}`);
     });
 }

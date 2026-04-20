@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Universal VMS</title>
+    <title>SK-VMS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap"
         rel="stylesheet">
@@ -61,7 +61,7 @@
     <!-- Sidebar -->
     <aside class="w-64 bg-indigo-900 text-indigo-100 flex-shrink-0 hidden md:flex flex-col shadow-2xl relative z-20">
         <div class="h-16 flex items-center px-6 font-bold text-xl tracking-wider text-white bg-indigo-950">
-            🚚 Universal VMS
+            🚚 SK-VMS
         </div>
         <div class="p-4 space-y-2 flex-grow">
             <div onclick="switchView('dispatch')" id="menu-dispatch"
@@ -178,7 +178,7 @@
             </div>
         </div>
         <div class="p-4 text-xs text-indigo-400 text-center">
-            © 2026 Universal VMS
+            © 2026 SK-VMS
         </div>
     </aside>
 
@@ -874,16 +874,16 @@
             document.getElementById('view-' + view).classList.add('active');
 
             const pageTitles = {
-                'dispatch': 'Universal VMS - 배차 요약',
-                'picking': 'Universal VMS - 피킹 요약',
-                'analysis': 'Universal VMS - 피킹 분석',
-                'status': 'Universal VMS - 배차 현황 (MySQL 원본조회)',
-                'product': 'Universal VMS - 제품 정보 관리',
-                'customer': 'Universal VMS - 거래처 정보 관리',
-                'vehicle': 'Universal VMS - 차량 정보 관리',
-                'upload': 'Universal VMS - 주문 엑셀 업로드 및 상세 조회',
-                'order-list': 'Universal VMS - 주문 조회',
-                'weight-list': 'Universal VMS - 중량 조회'
+                'dispatch': 'SK-VMS - 배차 요약',
+                'picking': 'SK-VMS - 피킹 요약',
+                'analysis': 'SK-VMS - 피킹 분석',
+                'status': 'SK-VMS - 배차 현황 (MySQL 원본조회)',
+                'product': 'SK-VMS - 제품 정보 관리',
+                'customer': 'SK-VMS - 거래처 정보 관리',
+                'vehicle': 'SK-VMS - 차량 정보 관리',
+                'upload': 'SK-VMS - 주문 엑셀 업로드 및 상세 조회',
+                'order-list': 'SK-VMS - 주문 조회',
+                'weight-list': 'SK-VMS - 중량 조회'
             };
             document.getElementById('page-title').innerText = pageTitles[view];
 
