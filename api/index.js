@@ -45,8 +45,8 @@ app.get('/api/summary', async (req, res) => {
             COUNT(DISTINCT b."B_C_NAME") as delivery_dest_count,
             COUNT(DISTINCT (b."B_DATE", b."CB_DRIVER", b."B_P_NO")) as total_count,
             SUM(b."B_KG") as total_weight
-        FROM "universal_vms"."NPS_t_balju" b
-        LEFT JOIN "universal_vms"."NPS_t_car" c ON b."CB_DRIVER" = c."CB_DRIVER"
+        FROM "SK_vms"."NPS_t_balju" b
+        LEFT JOIN "SK_vms"."NPS_t_car" c ON b."CB_DRIVER" = c."CB_DRIVER"
         WHERE b."B_DATE" >= '${startDate}' AND b."B_DATE" <= '${endDate}'
         ${customerCondition}
         AND b."CB_DRIVER" IS NOT NULL AND b."CB_DRIVER" <> ''
@@ -99,8 +99,8 @@ app.get('/api/picking-summary', async (req, res) => {
                     b."B_P_NO",
                     SUM(b."B_QTY") as qty,
                     SUM(b."B_KG") as kg
-                FROM "universal_vms"."NPS_t_balju" b
-                LEFT JOIN "universal_vms"."NPS_t_product" p ON b."B_P_NO" = p."P_CODE"
+                FROM "SK_vms"."NPS_t_balju" b
+                LEFT JOIN "SK_vms"."NPS_t_product" p ON b."B_P_NO" = p."P_CODE"
                 ${whereClause}
                 GROUP BY p_div_pick_fixed, b."B_DATE", b."CB_DRIVER", b."B_P_NO"
             ) as sub
@@ -145,10 +145,10 @@ app.get('/api/picking-analysis', async (req, res) => {
                     SUM(b."B_KG") as total_weight,
                     FLOOR(SUM(b."B_QTY") / NULLIF(MAX(p."P_IPSU"), 0)) as total_boxes,
                     SUM(b."B_QTY") % NULLIF(MAX(p."P_IPSU"), 0) as total_items
-                FROM "universal_vms"."NPS_t_balju" b
-                LEFT JOIN "universal_vms"."NPS_t_product" p ON b."B_P_NO" = p."P_CODE"
-                LEFT JOIN "universal_vms"."NPS_t_code_340" c340 ON p."P_DIV_PICK" = c340."P_DIV_PICK"
-                LEFT JOIN "universal_vms"."NPS_t_car" c ON b."CB_DRIVER" = c."CB_DRIVER"
+                FROM "SK_vms"."NPS_t_balju" b
+                LEFT JOIN "SK_vms"."NPS_t_product" p ON b."B_P_NO" = p."P_CODE"
+                LEFT JOIN "SK_vms"."NPS_t_code_340" c340 ON p."P_DIV_PICK" = c340."P_DIV_PICK"
+                LEFT JOIN "SK_vms"."NPS_t_car" c ON b."CB_DRIVER" = c."CB_DRIVER"
                 ${whereClause}
                 GROUP BY group_name, b."B_DATE", b."CB_DRIVER", b."B_P_NO", c."CA_DOCKNO"
             ) as sub
@@ -188,8 +188,8 @@ app.get('/api/picking-list', async (req, res) => {
                 p."P_IPSU" as ipsu,
                 SUM(b."B_QTY") as total_qty,
                 SUM(b."B_KG") as total_weight
-            FROM "universal_vms"."NPS_t_balju" b
-            LEFT JOIN "universal_vms"."NPS_t_product" p ON b."B_P_NO" = p."P_CODE"
+            FROM "SK_vms"."NPS_t_balju" b
+            LEFT JOIN "SK_vms"."NPS_t_product" p ON b."B_P_NO" = p."P_CODE"
             WHERE b."B_DATE" = '${date}'
             GROUP BY b."B_P_NAME", b."B_P_NO", b."B_C_NAME", b."CB_DRIVER", p."P_IPSU"
             ORDER BY b."B_P_NAME" ASC, b."B_C_NAME" ASC
@@ -263,7 +263,7 @@ app.post('/api/sync', async (req, res) => {
     try {
         const sourceUrl = process.env.MYSQL_URL || "mysql://user_web:pass_web%40%23@221.143.21.135:3306/db_ndy?charset=utf8mb4";
         const targetUrl = process.env.DATABASE_URL;
-        const targetSchema = 'universal_vms';
+        const targetSchema = 'SK_vms';
 
         const TARGET_TABLES = [
             { source: 't_balju', target: 'NPS_t_balju', useFilter: true },
@@ -425,7 +425,7 @@ app.get('/api/dispatch-status-details', async (req, res) => {
 
 app.get('/api/customers', async (req, res) => {
     try {
-        const raw = await prisma.$queryRawUnsafe(`SELECT DISTINCT "CB_DIV_CUST" FROM "universal_vms"."NPS_t_balju" WHERE "B_DATE" >= (CURRENT_DATE - INTERVAL '30 days')::text AND "CB_DIV_CUST" IS NOT NULL`);
+        const raw = await prisma.$queryRawUnsafe(`SELECT DISTINCT "CB_DIV_CUST" FROM "SK_vms"."NPS_t_balju" WHERE "B_DATE" >= (CURRENT_DATE - INTERVAL '30 days')::text AND "CB_DIV_CUST" IS NOT NULL`);
         res.json({ data: raw.map(r => fixEncoding(r.CB_DIV_CUST)).filter(c => c) });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });
@@ -582,7 +582,7 @@ app.get('/api/weight-summary', async (req, res) => {
                 CAST(COUNT(DISTINCT b."B_P_NO") AS FLOAT) as "item_count",
                 CAST(SUM(b."B_QTY") AS FLOAT) as "total_qty",
                 CAST(SUM(b."B_KG") AS FLOAT) as "total_weight"
-            FROM "universal_vms"."NPS_t_balju" b
+            FROM "SK_vms"."NPS_t_balju" b
             ${whereClause}
             GROUP BY b."B_DATE", b."B_C_NAME"
             ORDER BY b."B_DATE" DESC, b."B_C_NAME" ASC

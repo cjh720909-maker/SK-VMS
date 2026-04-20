@@ -6,7 +6,7 @@ async function check() {
         const result = await prisma.$queryRawUnsafe(`
       SELECT table_name
       FROM information_schema.tables
-      WHERE table_schema = 'universal_vms'
+      WHERE table_schema = 'SK_vms'
     `);
         console.log("Tables found:", result);
     } catch (e) {
