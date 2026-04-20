@@ -1,5 +1,3 @@
-// dispatch_server.js
-// [Universal VMS] 배차 요약 화면 (기사별 납품처/중량 집계)
 require('dotenv').config();
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
@@ -9,12 +7,22 @@ const { Client } = require('pg');
 const fs = require('fs');
 const iconv = require('iconv-lite');
 const multer = require('multer');
-const xlsx = require('xlsx');
+const XLSX = require('xlsx');
 const upload = multer({ dest: 'uploads/' });
 
 const app = express();
-const port = 3011;
-const prisma = new PrismaClient();
+const port = process.env.PORT || 3011;
+
+// Prisma Client reuse logic for Serverless
+let prisma;
+if (process.env.NODE_ENV === 'production') {
+    prisma = new PrismaClient();
+} else {
+    if (!global.prisma) {
+        global.prisma = new PrismaClient();
+    }
+    prisma = global.prisma;
+}
 
 app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use(express.json());
@@ -769,6 +777,21 @@ app.get(/.*/, (req, res) => {
     res.sendFile(path.resolve(__dirname, '..', 'public', 'index.html'));
 });
 
-app.listen(port, () => {
-    console.log(`🚚 Universal VMS 가동 중: http://localhost:${port}`);
+// 글로벌 에러 핸들러 추가
+app.use((err, req, res, next) => {
+    console.error('--- Global Error Handler ---');
+    console.error(err);
+    res.status(err.status || 500).json({
+        error: err.message || 'Internal Server Error'
+    });
 });
+
+// Vercel deployment support: export the app
+module.exports = app;
+
+// Only listen if not in a serverless environment (Vercel sets VERCEL_REGION)
+if (!process.env.VERCEL) {
+    app.listen(port, () => {
+        console.log(`🚚 Universal VMS 가동 중: http://localhost:${port}`);
+    });
+}
