@@ -1,4 +1,6 @@
 require('dotenv').config();
+// Vercel 환경 변수 오류 방지를 위한 강제 주입
+process.env.DATABASE_URL = "postgresql://neondb_owner:npg_WlFycaVf0r8z@ep-flat-fire-a1hfhxkq.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&schema=SK_vms";
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 const path = require('path');
