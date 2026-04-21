@@ -10,24 +10,38 @@ const fs = require('fs');
 const iconv = require('iconv-lite');
 const multer = require('multer');
 const XLSX = require('xlsx');
-const upload = multer({ dest: 'uploads/' });
+const upload = multer({ dest: '/tmp/' });
 
 const app = express();
 const port = process.env.PORT || 3011;
 
-// Prisma Client reuse logic for Serverless
+let initError = null;
 let prisma;
-if (process.env.NODE_ENV === 'production') {
-    prisma = new PrismaClient();
-} else {
-    if (!global.prisma) {
-        global.prisma = new PrismaClient();
+try {
+    if (process.env.NODE_ENV === 'production') {
+        prisma = new PrismaClient();
+    } else {
+        if (!global.prisma) {
+            global.prisma = new PrismaClient();
+        }
+        prisma = global.prisma;
     }
-    prisma = global.prisma;
+} catch (e) {
+    initError = e;
 }
 
 app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use(express.json());
+
+// If there was an initialization error, return it for all API requests
+app.use('/api', (req, res, next) => {
+    if (initError) {
+        return res.status(500).json({ error: "INIT_ERROR", message: initError.message, stack: initError.stack });
+    }
+    next();
+});
+
+// removed old prisma initialization
 
 function fixEncoding(str) {
     if (typeof str !== 'string') return str;
